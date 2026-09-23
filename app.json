@@ -1,0 +1,39 @@
+{
+  "expo": {
+    "name": "Viralstan Academy",
+    "slug": "viralstan-academy",
+    "icon": "./assets/images/logo.png",
+    "splash": {
+      "image": "./assets/images/home.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#061A33"
+    },
+    "scheme": "viralstanacademy",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      "expo-status-bar",
+      "expo-video",
+      "expo-secure-store"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "android": {
+      "package": "com.viralstan.academy",
+      "versionCode": 2
+    },
+    "ios": {
+      "bundleIdentifier": "com.viralstan.academy"
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "1168d8f1-8351-4d7a-8194-b6ada2d0ff58"
+      }
+    }
+  }
+}
