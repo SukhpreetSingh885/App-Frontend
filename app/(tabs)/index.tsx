@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Image,
+  ActivityIndicator,
+  Modal,
   ScrollView,
   StyleSheet,
   Text,
@@ -8,6 +10,7 @@ import {
   Pressable,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { getEnrollments } from "@/services/enrollment";
 import { getCourseProgress, type CourseProgress } from "@/services/progress";
@@ -17,6 +20,8 @@ import SearchBar from "@/components/SearchBar";
 import CourseCard from "@/components/CourseCard";
 import SectionHeader from "@/components/SectionHeader";
 import { router, useFocusEffect } from "expo-router";
+import { getUnreadNotificationCount } from "@/services/notification.service";
+import { useAuth } from "@/context/AuthContext";
 
 const categories = [
   "Development",
@@ -28,11 +33,20 @@ const categories = [
 
 export default function HomeScreen() {
 
+  const { user, logout } = useAuth();
+  const insets = useSafeAreaInsets();
+
   const [courses, setCourses] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [enrolledIds, setEnrolledIds] = useState<string[]>([]);
   const [progressMap, setProgressMap] =
     useState<Record<string, CourseProgress>>({});
+  const [unreadCount, setUnreadCount] =
+    useState(0);
+  const [profileMenuVisible, setProfileMenuVisible] =
+    useState(false);
+  const [isLoggingOut, setIsLoggingOut] =
+    useState(false);
 
 
   useEffect(() => {
@@ -59,6 +73,34 @@ export default function HomeScreen() {
     (course) => course.popular
   );
 
+
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+
+      const loadUnreadCount = async () => {
+        try {
+          const count =
+            await getUnreadNotificationCount();
+
+          if (active) {
+            setUnreadCount(count);
+          }
+        } catch (error) {
+          console.error(
+            "Notification count loading error:",
+            error,
+          );
+        }
+      };
+
+      void loadUnreadCount();
+
+      return () => {
+        active = false;
+      };
+    }, []),
+  );
 
   useFocusEffect(
     useCallback(() => {
@@ -100,6 +142,56 @@ export default function HomeScreen() {
 
 
   const hasEnrollments = enrolledIds.length > 0;
+
+  const initials = useMemo(() => {
+    const words = (user?.name ?? "")
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean);
+
+    if (!words.length) {
+      return "?";
+    }
+
+    if (words.length === 1) {
+      return words[0][0].toUpperCase();
+    }
+
+    return (
+      words[0][0] +
+      words[words.length - 1][0]
+    ).toUpperCase();
+  }, [user?.name]);
+
+  const userMobile = useMemo(() => {
+    const countryCode =
+      typeof user?.countryCode === "string"
+        ? user.countryCode
+        : "";
+    const mobile =
+      typeof user?.mobile === "string"
+        ? user.mobile
+        : "";
+    const phoneNumber =
+      typeof user?.phoneNumber === "string"
+        ? user.phoneNumber
+        : "";
+
+    return countryCode && mobile
+      ? `${countryCode} ${mobile}`
+      : phoneNumber || "Mobile number unavailable";
+  }, [user]);
+
+  const handleLogout = async () => {
+    try {
+      setIsLoggingOut(true);
+      await logout();
+      setProfileMenuVisible(false);
+      router.replace("/auth/login");
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
 
 
   const normalizedSearchQuery =
@@ -143,12 +235,51 @@ export default function HomeScreen() {
           />
 
 
-          <View style={styles.bell}>
-            <Ionicons
-              name="notifications-outline"
-              size={22}
-              color={COLORS.text}
-            />
+          <View style={styles.headerActions}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={
+                unreadCount
+                  ? `Notifications, ${unreadCount} unread`
+                  : "Notifications"
+              }
+              style={styles.bell}
+              onPress={() =>
+                router.push("/notifications")
+              }
+            >
+              <Ionicons
+                name="notifications-outline"
+                size={22}
+                color={COLORS.text}
+              />
+
+              {unreadCount > 0 ? (
+                <View style={styles.notificationBadge}>
+                  <Text style={styles.notificationBadgeText}>
+                    {unreadCount > 99
+                      ? "99+"
+                      : unreadCount}
+                  </Text>
+                </View>
+              ) : null}
+            </Pressable>
+
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Open profile menu"
+              style={({ pressed }) => [
+                styles.avatar,
+                pressed && styles.headerActionPressed,
+              ]}
+              onPress={() =>
+                setProfileMenuVisible(true)
+              }
+            >
+              <Text style={styles.avatarText}>
+                {initials}
+              </Text>
+            </Pressable>
           </View>
 
         </View>
@@ -353,6 +484,94 @@ export default function HomeScreen() {
 
       </ScrollView>
 
+      <Modal
+        transparent
+        animationType="fade"
+        visible={profileMenuVisible}
+        statusBarTranslucent
+        onRequestClose={() =>
+          setProfileMenuVisible(false)
+        }
+      >
+        <View style={styles.menuOverlay}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Close profile menu"
+            style={StyleSheet.absoluteFill}
+            onPress={() =>
+              setProfileMenuVisible(false)
+            }
+          />
+
+          <View
+            style={[
+              styles.profileMenu,
+              { top: insets.top + 68 },
+            ]}
+          >
+            <View style={styles.profileMenuHeader}>
+              <View style={styles.menuAvatar}>
+                <Text style={styles.menuAvatarText}>
+                  {initials}
+                </Text>
+              </View>
+
+              <View style={styles.profileDetails}>
+                <Text
+                  style={styles.profileName}
+                  numberOfLines={1}
+                >
+                  {user?.name ?? "Student"}
+                </Text>
+                <Text
+                  style={styles.profileDetail}
+                  numberOfLines={1}
+                >
+                  {user?.email ?? "Email unavailable"}
+                </Text>
+                <Text
+                  style={styles.profileDetail}
+                  numberOfLines={1}
+                >
+                  {userMobile}
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.profileMenuDivider} />
+
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Logout"
+              disabled={isLoggingOut}
+              style={({ pressed }) => [
+                styles.menuLogout,
+                pressed && styles.headerActionPressed,
+              ]}
+              onPress={() => void handleLogout()}
+            >
+              {isLoggingOut ? (
+                <ActivityIndicator
+                  size="small"
+                  color={COLORS.danger}
+                />
+              ) : (
+                <Ionicons
+                  name="log-out-outline"
+                  size={20}
+                  color={COLORS.danger}
+                />
+              )}
+              <Text style={styles.menuLogoutText}>
+                {isLoggingOut
+                  ? "Logging out..."
+                  : "Logout"}
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
+
     </SafeAreaView>
   );
 }
@@ -378,6 +597,12 @@ const styles = StyleSheet.create({
     marginBottom:18,
   },
 
+  headerActions:{
+    flexDirection:"row",
+    alignItems:"center",
+    gap:10,
+  },
+
   bell:{
     width:44,
     height:44,
@@ -385,6 +610,128 @@ const styles = StyleSheet.create({
     backgroundColor:COLORS.surface,
     alignItems:"center",
     justifyContent:"center",
+    position:"relative",
+  },
+
+  notificationBadge:{
+    position:"absolute",
+    top:-3,
+    right:-3,
+    minWidth:19,
+    height:19,
+    borderRadius:10,
+    paddingHorizontal:4,
+    backgroundColor:COLORS.danger,
+    borderWidth:2,
+    borderColor:COLORS.background,
+    alignItems:"center",
+    justifyContent:"center",
+  },
+
+  notificationBadgeText:{
+    color:"#FFFFFF",
+    fontSize:10,
+    lineHeight:12,
+    fontWeight:"900",
+  },
+
+  avatar:{
+    width:40,
+    height:40,
+    borderRadius:20,
+    backgroundColor:COLORS.primary,
+    alignItems:"center",
+    justifyContent:"center",
+    borderWidth:2,
+    borderColor:COLORS.surface,
+  },
+
+  avatarText:{
+    color:"#FFFFFF",
+    fontSize:14,
+    fontWeight:"900",
+    letterSpacing:0.3,
+  },
+
+  headerActionPressed:{
+    opacity:0.72,
+  },
+
+  menuOverlay:{
+    flex:1,
+    backgroundColor:"rgba(15, 23, 42, 0.16)",
+  },
+
+  profileMenu:{
+    position:"absolute",
+    right:SPACING.md,
+    width:280,
+    backgroundColor:COLORS.surface,
+    borderRadius:RADIUS.lg,
+    borderWidth:1,
+    borderColor:COLORS.border,
+    padding:SPACING.md,
+    shadowColor:"#0F172A",
+    shadowOffset:{ width:0, height:8 },
+    shadowOpacity:0.18,
+    shadowRadius:18,
+    elevation:10,
+  },
+
+  profileMenuHeader:{
+    flexDirection:"row",
+    alignItems:"center",
+  },
+
+  menuAvatar:{
+    width:46,
+    height:46,
+    borderRadius:23,
+    backgroundColor:COLORS.softBlue,
+    alignItems:"center",
+    justifyContent:"center",
+    marginRight:SPACING.sm,
+  },
+
+  menuAvatarText:{
+    color:COLORS.primary,
+    fontSize:16,
+    fontWeight:"900",
+  },
+
+  profileDetails:{
+    flex:1,
+  },
+
+  profileName:{
+    color:COLORS.text,
+    fontSize:16,
+    fontWeight:"900",
+  },
+
+  profileDetail:{
+    color:COLORS.muted,
+    fontSize:12,
+    marginTop:3,
+  },
+
+  profileMenuDivider:{
+    height:1,
+    backgroundColor:COLORS.border,
+    marginVertical:SPACING.md,
+  },
+
+  menuLogout:{
+    flexDirection:"row",
+    alignItems:"center",
+    gap:SPACING.sm,
+    paddingVertical:SPACING.xs,
+  },
+
+  menuLogoutText:{
+    color:COLORS.danger,
+    fontSize:14,
+    fontWeight:"800",
   },
 
   hero:{

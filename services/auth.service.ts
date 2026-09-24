@@ -35,3 +35,51 @@ export async function loginUser(data: {
     },
   );
 }
+export async function sendForgotPasswordOtp(
+  email: string,
+) {
+  return apiRequest<{ message: string }>(
+    "/auth/forgot-password/send-otp",
+    {
+      method: "POST",
+      body: JSON.stringify({
+        email,
+      }),
+    },
+  );
+}
+
+export async function verifyForgotPasswordOtp(
+  email: string,
+  otp: string,
+) {
+  return apiRequest<{
+    verified: boolean;
+    message: string;
+  }>(
+    "/auth/forgot-password/verify-otp",
+    {
+      method: "POST",
+      body: JSON.stringify({
+        email,
+        otp,
+      }),
+    },
+  );
+}
+
+export async function resetForgotPassword(
+  email: string,
+  password: string,
+) {
+  return apiRequest<{ message: string }>(
+    "/auth/forgot-password/reset",
+    {
+      method: "POST",
+      body: JSON.stringify({
+        email,
+        password,
+      }),
+    },
+  );
+}

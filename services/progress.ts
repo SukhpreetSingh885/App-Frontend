@@ -1,4 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { apiRequest } from "./api";
 
 const PROGRESS_KEY = "viralstan_course_progress";
 
@@ -9,6 +10,17 @@ export type CourseProgress = {
 
 type ProgressStore = {
   [courseId: string]: CourseProgress;
+};
+
+type BackendProgressRecord = {
+  _id: string;
+  userId: string;
+  courseId: string;
+  lessonId: string;
+  completed: boolean;
+  lastWatchedPosition: number;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 async function getProgressStore(): Promise<ProgressStore> {
@@ -37,9 +49,42 @@ export async function getCourseProgress(
   courseId: string
 ): Promise<CourseProgress> {
   const store = await getProgressStore();
+  const cached = store[courseId];
+
+  try {
+    const records =
+      await apiRequest<BackendProgressRecord[]>(
+        `/progress/me/course/${courseId}`,
+      );
+
+    const completedLessonIds = [
+      ...new Set(
+        records
+          .filter((record) => record.completed)
+          .map((record) => record.lessonId),
+      ),
+    ];
+
+    const syncedProgress: CourseProgress = {
+      completedLessonIds,
+      ...(cached?.lastLessonId
+        ? { lastLessonId: cached.lastLessonId }
+        : {}),
+    };
+
+    store[courseId] = syncedProgress;
+    await saveProgressStore(store);
+
+    return syncedProgress;
+  } catch (error) {
+    console.log(
+      "Error syncing backend progress:",
+      error,
+    );
+  }
 
   return (
-    store[courseId] || {
+    cached || {
       completedLessonIds: [],
     }
   );
@@ -49,6 +94,11 @@ export async function markLessonComplete(
   courseId: string,
   lessonId: string
 ) {
+  await apiRequest<BackendProgressRecord>(
+    `/progress/${courseId}/${lessonId}/complete`,
+    { method: "POST" },
+  );
+
   const store = await getProgressStore();
 
   const current =

@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { useFocusEffect } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 
 import {
   getMyReferralCodes,
@@ -186,7 +186,7 @@ export default function ReferralScreen() {
                 />
               </View>
 
-              <View>
+              <View style={styles.walletDetails}>
                 <Text style={styles.walletLabel}>
                   Wallet Balance
                 </Text>
@@ -194,6 +194,18 @@ export default function ReferralScreen() {
                 <Text style={styles.walletAmount}>
                   ₹{walletBalance}
                 </Text>
+              </View>
+
+              <View style={styles.walletActions}>
+                <Pressable
+                  style={styles.withdrawButton}
+                  onPress={() => router.push("/withdraw")}
+                >
+                  <Text style={styles.withdrawButtonText}>Withdraw</Text>
+                </Pressable>
+                <Pressable onPress={() => router.push("/withdrawals")}>
+                  <Text style={styles.historyLink}>History</Text>
+                </Pressable>
               </View>
             </View>
 
@@ -452,6 +464,34 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.softBlue,
     alignItems: "center",
     justifyContent: "center",
+  },
+
+  walletDetails: {
+    flex: 1,
+  },
+
+  walletActions: {
+    alignItems: "center",
+    gap: SPACING.xs,
+  },
+
+  withdrawButton: {
+    backgroundColor: COLORS.primary,
+    borderRadius: RADIUS.sm,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
+  },
+
+  withdrawButtonText: {
+    color: "#FFFFFF",
+    fontSize: 13,
+    fontWeight: "800",
+  },
+
+  historyLink: {
+    color: COLORS.primary,
+    fontSize: 12,
+    fontWeight: "800",
   },
 
   walletLabel: {
