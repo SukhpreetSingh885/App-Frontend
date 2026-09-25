@@ -264,22 +264,21 @@ export default function HomeScreen() {
                 </View>
               ) : null}
             </Pressable>
-
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Open profile menu"
-              style={({ pressed }) => [
-                styles.avatar,
-                pressed && styles.headerActionPressed,
-              ]}
-              onPress={() =>
-                setProfileMenuVisible(true)
-              }
-            >
-              <Text style={styles.avatarText}>
-                {initials}
-              </Text>
-            </Pressable>
+<Pressable
+  accessibilityRole="button"
+  accessibilityLabel="Open profile"
+  style={({ pressed }) => [
+    styles.avatar,
+    pressed && styles.headerActionPressed,
+  ]}
+  onPress={() =>
+    router.push("/(tabs)/profile")
+  }
+>
+  <Text style={styles.avatarText}>
+    {initials}
+  </Text>
+</Pressable>
           </View>
 
         </View>

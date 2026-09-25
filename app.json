@@ -7,32 +7,39 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
+
     "plugins": [
       "expo-router",
       "expo-font",
       "expo-status-bar",
       "expo-video",
       "expo-secure-store",
+
       [
         "expo-splash-screen",
         {
           "image": "./assets/images/home.png",
-          "resizeMode": "contain",
+          "resizeMode": "cover",
           "backgroundColor": "#061A33"
         }
       ],
+
       "expo-sharing"
     ],
+
     "experiments": {
       "typedRoutes": true
     },
+
     "android": {
       "package": "com.viralstan.academy",
-      "versionCode": 3
+      "versionCode": 4
     },
+
     "ios": {
       "bundleIdentifier": "com.viralstan.academy"
     },
+
     "extra": {
       "router": {},
       "eas": {
