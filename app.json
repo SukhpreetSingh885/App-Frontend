@@ -32,7 +32,7 @@
 
     "android": {
       "package": "com.viralstan.academy",
-      "versionCode": 5
+      "versionCode": 6
     },
 
     "ios": {

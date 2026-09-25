@@ -108,8 +108,11 @@ export default function LessonPlayerScreen() {
   useEffect(() => {
     const loadCourse = async () => {
       if (!courseId) {
+        setLoading(false);
         return;
       }
+
+      setLoading(true);
 
       try {
         const data =
@@ -125,6 +128,7 @@ export default function LessonPlayerScreen() {
         );
 
         setCourse(null);
+        setLoading(false);
       }
     };
 
@@ -307,10 +311,6 @@ export default function LessonPlayerScreen() {
       const checkEnrollment =
         async () => {
           if (!course) {
-            if (active) {
-              setLoading(false);
-            }
-
             return;
           }
 
@@ -648,7 +648,11 @@ export default function LessonPlayerScreen() {
     });
   };
 
-  if (loading) {
+  if (
+    loading ||
+    (course !== null &&
+      course.id !== courseId)
+  ) {
     return (
       <SafeAreaView
         style={styles.safe}
@@ -668,8 +672,8 @@ export default function LessonPlayerScreen() {
   }
 
   if (
-    !course ||
-    !currentLesson
+    !loading &&
+    (!course || !currentLesson)
   ) {
     return (
       <SafeAreaView
@@ -743,7 +747,7 @@ export default function LessonPlayerScreen() {
             }
             onPress={() =>
               router.replace(
-                `/course/${course.id}`,
+                `/course/${course!.id}`,
               )
             }
           >
@@ -801,7 +805,7 @@ export default function LessonPlayerScreen() {
               }
               numberOfLines={1}
             >
-              {course.title}
+              {course!.title}
             </Text>
 
             <Text
@@ -1004,52 +1008,52 @@ export default function LessonPlayerScreen() {
               </Text>
             </Pressable>
 
-            <Pressable
-              disabled={
-                !nextLesson
-              }
-              onPress={() => {
-                if (
-                  nextLesson
-                ) {
+            {nextLesson ? (
+              <Pressable
+                onPress={() =>
                   openLesson(
                     nextLesson.id,
-                  );
+                  )
                 }
-              }}
-              style={[
-                styles.nextButton,
-                !nextLesson &&
-                  styles.disabledNextButton,
-              ]}
-            >
-              <Text
                 style={
-                  styles.nextText
+                  styles.nextButton
                 }
               >
-                {nextLesson
-                  ? "Next Lesson"
-                  : lessons.every(
-                        (
-                          lesson,
-                        ) =>
-                          completedLessons.includes(
-                            lesson.id,
-                          ),
-                      )
-                    ? "Course Completed"
-                    : "Course End"}
-              </Text>
+                <Text
+                  style={
+                    styles.nextText
+                  }
+                >
+                  Next Lesson
+                </Text>
 
-              {nextLesson && (
                 <Ionicons
                   name="arrow-forward"
                   size={18}
                   color="#FFFFFF"
                 />
-              )}
-            </Pressable>
+              </Pressable>
+            ) : (
+              <View
+                style={
+                  styles.completionBadge
+                }
+              >
+                <Ionicons
+                  name="checkmark-circle"
+                  size={19}
+                  color={COLORS.success}
+                />
+
+                <Text
+                  style={
+                    styles.completionBadgeText
+                  }
+                >
+                  Course Completed
+                </Text>
+              </View>
+            )}
           </View>
 
           <Text
@@ -1060,7 +1064,7 @@ export default function LessonPlayerScreen() {
             Course Lessons
           </Text>
 
-          {course.modules?.map(
+          {course!.modules?.map(
             (
               module,
               moduleIndex,
@@ -1349,8 +1353,22 @@ const styles =
       opacity: 0.4,
     },
 
-    disabledNextButton: {
-      opacity: 0.4,
+    completionBadge: {
+      flex: 1,
+      minHeight: 50,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent:
+        "center",
+      gap: 7,
+      backgroundColor: "#DCFCE7",
+      borderRadius:
+        RADIUS.md,
+    },
+
+    completionBadgeText: {
+      color: COLORS.success,
+      fontWeight: "800",
     },
 
     sectionTitle: {
