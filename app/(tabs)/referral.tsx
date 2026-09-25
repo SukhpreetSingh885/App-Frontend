@@ -120,6 +120,9 @@ export default function ReferralScreen() {
     );
   };
 
+  const formatAmount = (amount: number) =>
+    `\u20B9${amount.toLocaleString("en-IN")}`;
+
   if (loading) {
     return (
       <SafeAreaView style={styles.safe}>
@@ -141,6 +144,7 @@ export default function ReferralScreen() {
     <SafeAreaView style={styles.safe}>
       <ScrollView
         contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -148,18 +152,42 @@ export default function ReferralScreen() {
           />
         }
       >
-        <Text style={styles.title}>
-          Refer & Earn
-        </Text>
+        <View style={styles.heroCard}>
+          <View style={styles.heroCircleLarge} />
+          <View style={styles.heroCircleSmall} />
 
-        <Text style={styles.subtitle}>
-          Invite friends to ViralStan Academy
-          and earn rewards when they become
-          eligible students.
-        </Text>
+          <View style={styles.heroIcon}>
+            <Ionicons
+              name="gift"
+              size={28}
+              color="#FFFFFF"
+            />
+          </View>
+
+          <Text style={styles.heroEyebrow}>
+            SHARE THE LEARNING
+          </Text>
+
+          <Text style={styles.title}>
+            Refer & Earn
+          </Text>
+
+          <Text style={styles.subtitle}>
+            Invite friends to ViralStan Academy and
+            earn rewards when they become eligible.
+          </Text>
+        </View>
 
         {error ? (
           <View style={styles.errorBox}>
+            <View style={styles.errorIcon}>
+              <Ionicons
+                name="alert-circle-outline"
+                size={24}
+                color={COLORS.danger}
+              />
+            </View>
+
             <Text style={styles.errorText}>
               {error}
             </Text>
@@ -177,57 +205,119 @@ export default function ReferralScreen() {
 
         {!error && data ? (
           <>
-            <View style={styles.walletCard}>
-              <View style={styles.walletIcon}>
-                <Ionicons
-                  name="wallet-outline"
-                  size={28}
-                  color={COLORS.primary}
-                />
-              </View>
+            <View style={styles.overviewCard}>
+              <View style={styles.overviewMetrics}>
+                <View style={styles.metricItem}>
+                  <View style={styles.metricIconBlue}>
+                    <Ionicons
+                      name="wallet-outline"
+                      size={21}
+                      color={COLORS.primary}
+                    />
+                  </View>
 
-              <View style={styles.walletDetails}>
-                <Text style={styles.walletLabel}>
-                  Wallet Balance
-                </Text>
+                  <Text style={styles.metricLabel}>
+                    Wallet balance
+                  </Text>
 
-                <Text style={styles.walletAmount}>
-                  ₹{walletBalance}
-                </Text>
+                  <Text style={styles.metricAmount}>
+                    {formatAmount(walletBalance)}
+                  </Text>
+                </View>
+
+                <View style={styles.metricDivider} />
+
+                <View style={styles.metricItem}>
+                  <View style={styles.metricIconPurple}>
+                    <Ionicons
+                      name="sparkles-outline"
+                      size={21}
+                      color={COLORS.secondary}
+                    />
+                  </View>
+
+                  <Text style={styles.metricLabel}>
+                    Reward per referral
+                  </Text>
+
+                  <Text
+                    style={[
+                      styles.metricAmount,
+                      styles.rewardAmount,
+                    ]}
+                  >
+                    {formatAmount(data.rewardAmount)}
+                  </Text>
+                </View>
               </View>
 
               <View style={styles.walletActions}>
                 <Pressable
                   style={styles.withdrawButton}
                   onPress={() => router.push("/withdraw")}
+                  accessibilityRole="button"
                 >
-                  <Text style={styles.withdrawButtonText}>Withdraw</Text>
+                  <Ionicons
+                    name="arrow-up-circle-outline"
+                    size={18}
+                    color="#FFFFFF"
+                  />
+
+                  <Text style={styles.withdrawButtonText}>
+                    Withdraw
+                  </Text>
                 </Pressable>
-                <Pressable onPress={() => router.push("/withdrawals")}>
-                  <Text style={styles.historyLink}>History</Text>
+
+                <Pressable
+                  style={styles.historyButton}
+                  onPress={() => router.push("/withdrawals")}
+                  accessibilityRole="button"
+                >
+                  <Ionicons
+                    name="time-outline"
+                    size={18}
+                    color={COLORS.primary}
+                  />
+
+                  <Text style={styles.historyLink}>
+                    Withdrawals
+                  </Text>
                 </Pressable>
               </View>
             </View>
 
-            <View style={styles.rewardCard}>
-              <Ionicons
-                name="gift-outline"
-                size={42}
-                color={COLORS.secondary}
-              />
+            <Text style={styles.sectionTitle}>
+              How it works
+            </Text>
 
-              <Text style={styles.rewardTitle}>
-                Your Referral Reward
-              </Text>
+            <View style={styles.stepsCard}>
+              <View style={styles.stepItem}>
+                <View style={styles.stepNumber}>
+                  <Text style={styles.stepNumberText}>1</Text>
+                </View>
+                <Text style={styles.stepTitle}>Invite</Text>
+                <Text style={styles.stepText}>Share your code</Text>
+              </View>
 
-              <Text style={styles.rewardAmount}>
-                ₹{data.rewardAmount}
-              </Text>
+              <View style={styles.stepLine} />
 
-              <Text style={styles.rewardText}>
-                You can earn this reward for an
-                eligible successful referral.
-              </Text>
+              <View style={styles.stepItem}>
+                <View style={styles.stepNumber}>
+                  <Text style={styles.stepNumberText}>2</Text>
+                </View>
+                <Text style={styles.stepTitle}>They join</Text>
+                <Text style={styles.stepText}>Friend enrolls</Text>
+              </View>
+
+              <View style={styles.stepLine} />
+
+              <View style={styles.stepItem}>
+                <View style={styles.stepNumber}>
+                  <Text style={styles.stepNumberText}>3</Text>
+                </View>
+                <Text style={styles.stepTitle}>You earn</Text>
+                <Text style={styles.stepText}>Reward is added</Text>
+              </View>
             </View>
 
             <Text style={styles.sectionTitle}>
@@ -257,26 +347,47 @@ export default function ReferralScreen() {
                   key={referral.code}
                   style={styles.codeCard}
                 >
-                  <Text style={styles.codeLabel}>
-                    Referral Code
-                  </Text>
+                  <View style={styles.codeHeader}>
+                    <View style={styles.codeIcon}>
+                      <Ionicons
+                        name="ticket-outline"
+                        size={21}
+                        color={COLORS.secondary}
+                      />
+                    </View>
 
-                  <Text style={styles.code}>
-                    {referral.code}
-                  </Text>
+                    <View style={styles.codeDetails}>
+                      <Text style={styles.codeLabel}>
+                        YOUR REFERRAL CODE
+                      </Text>
 
-                  <Text
-                    style={styles.link}
-                    numberOfLines={1}
-                  >
-                    {referral.link}
-                  </Text>
+                      <Text style={styles.code}>
+                        {referral.code}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.linkBox}>
+                    <Ionicons
+                      name="link-outline"
+                      size={16}
+                      color={COLORS.muted}
+                    />
+
+                    <Text
+                      style={styles.link}
+                      numberOfLines={1}
+                    >
+                      {referral.link}
+                    </Text>
+                  </View>
 
                   <Pressable
                     style={styles.shareButton}
                     onPress={() =>
                       handleShare(referral)
                     }
+                    accessibilityRole="button"
                   >
                     <Ionicons
                       name="share-social-outline"
@@ -387,7 +498,9 @@ export default function ReferralScreen() {
                           "credit"
                             ? "+"
                             : "-"}
-                          ₹{transaction.amount}
+                          {formatAmount(
+                            transaction.amount,
+                          )}
                         </Text>
                       </View>
 
@@ -433,108 +546,219 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    fontSize: 28,
+    fontSize: 30,
     fontWeight: "900",
-    color: COLORS.text,
+    color: "#FFFFFF",
+    marginTop: SPACING.xs,
   },
 
   subtitle: {
-    color: COLORS.muted,
-    marginTop: SPACING.xs,
-    marginBottom: SPACING.lg,
-    lineHeight: 21,
+    color: "rgba(255, 255, 255, 0.84)",
+    marginTop: SPACING.sm,
+    lineHeight: 22,
+    maxWidth: 285,
   },
 
-  walletCard: {
+  heroCard: {
+    minHeight: 220,
+    backgroundColor: COLORS.primary,
+    borderRadius: RADIUS.xl,
+    padding: SPACING.lg,
+    marginBottom: SPACING.md,
+    overflow: "hidden",
+  },
+
+  heroCircleLarge: {
+    position: "absolute",
+    width: 190,
+    height: 190,
+    borderRadius: 95,
+    backgroundColor: "rgba(255, 255, 255, 0.08)",
+    right: -65,
+    top: -70,
+  },
+
+  heroCircleSmall: {
+    position: "absolute",
+    width: 92,
+    height: 92,
+    borderRadius: 46,
+    backgroundColor: "rgba(124, 58, 237, 0.34)",
+    right: 38,
+    bottom: -38,
+  },
+
+  heroIcon: {
+    width: 52,
+    height: 52,
+    borderRadius: RADIUS.md,
+    backgroundColor: "rgba(255, 255, 255, 0.18)",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: SPACING.md,
+  },
+
+  heroEyebrow: {
+    color: "rgba(255, 255, 255, 0.72)",
+    fontSize: 11,
+    fontWeight: "900",
+    letterSpacing: 1.4,
+  },
+
+  overviewCard: {
     backgroundColor: COLORS.surface,
     borderRadius: RADIUS.lg,
     borderWidth: 1,
     borderColor: COLORS.border,
     padding: SPACING.md,
-    marginBottom: SPACING.md,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: SPACING.md,
   },
 
-  walletIcon: {
-    width: 52,
-    height: 52,
-    borderRadius: RADIUS.md,
+  overviewMetrics: {
+    flexDirection: "row",
+    paddingBottom: SPACING.md,
+  },
+
+  metricItem: {
+    flex: 1,
+    minWidth: 0,
+  },
+
+  metricIconBlue: {
+    width: 40,
+    height: 40,
+    borderRadius: RADIUS.sm,
     backgroundColor: COLORS.softBlue,
     alignItems: "center",
     justifyContent: "center",
   },
 
-  walletDetails: {
-    flex: 1,
-  },
-
-  walletActions: {
-    alignItems: "center",
-    gap: SPACING.xs,
-  },
-
-  withdrawButton: {
-    backgroundColor: COLORS.primary,
+  metricIconPurple: {
+    width: 40,
+    height: 40,
     borderRadius: RADIUS.sm,
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm,
+    backgroundColor: COLORS.softPurple,
+    alignItems: "center",
+    justifyContent: "center",
   },
 
-  withdrawButtonText: {
-    color: "#FFFFFF",
-    fontSize: 13,
-    fontWeight: "800",
+  metricDivider: {
+    width: 1,
+    backgroundColor: COLORS.border,
+    marginHorizontal: SPACING.md,
   },
 
-  historyLink: {
-    color: COLORS.primary,
-    fontSize: 12,
-    fontWeight: "800",
-  },
-
-  walletLabel: {
+  metricLabel: {
     color: COLORS.muted,
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: "700",
+    marginTop: SPACING.sm,
   },
 
-  walletAmount: {
+  metricAmount: {
     color: COLORS.text,
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: "900",
     marginTop: 2,
   },
 
-  rewardCard: {
-    backgroundColor: COLORS.softPurple,
-    borderRadius: RADIUS.xl,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    padding: SPACING.lg,
-    alignItems: "center",
+  walletActions: {
+    flexDirection: "row",
+    gap: SPACING.sm,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+    paddingTop: SPACING.md,
   },
 
-  rewardTitle: {
-    color: COLORS.text,
-    fontSize: 18,
+  withdrawButton: {
+    flex: 1,
+    minHeight: 44,
+    backgroundColor: COLORS.primary,
+    borderRadius: RADIUS.md,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: SPACING.xs,
+  },
+
+  withdrawButtonText: {
+    color: "#FFFFFF",
+    fontSize: 14,
     fontWeight: "800",
-    marginTop: SPACING.sm,
+  },
+
+  historyButton: {
+    flex: 1,
+    minHeight: 44,
+    borderRadius: RADIUS.md,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: SPACING.xs,
+  },
+
+  historyLink: {
+    color: COLORS.primary,
+    fontSize: 14,
+    fontWeight: "800",
   },
 
   rewardAmount: {
     color: COLORS.secondary,
-    fontSize: 34,
-    fontWeight: "900",
-    marginTop: SPACING.xs,
   },
 
-  rewardText: {
-    color: COLORS.muted,
+  stepsCard: {
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.lg,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    padding: SPACING.md,
+    flexDirection: "row",
+    alignItems: "flex-start",
+  },
+
+  stepItem: {
+    flex: 1,
+    alignItems: "center",
+  },
+
+  stepNumber: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: COLORS.softBlue,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  stepNumberText: {
+    color: COLORS.primary,
+    fontSize: 14,
+    fontWeight: "900",
+  },
+
+  stepLine: {
+    flex: 0.45,
+    height: 1,
+    backgroundColor: COLORS.border,
+    marginTop: 17,
+  },
+
+  stepTitle: {
+    color: COLORS.text,
+    fontSize: 13,
+    fontWeight: "800",
+    marginTop: SPACING.sm,
     textAlign: "center",
-    lineHeight: 20,
-    marginTop: SPACING.xs,
+  },
+
+  stepText: {
+    color: COLORS.muted,
+    fontSize: 11,
+    lineHeight: 15,
+    textAlign: "center",
+    marginTop: 2,
   },
 
   sectionTitle: {
@@ -554,24 +778,55 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.md,
   },
 
+  codeHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  codeIcon: {
+    width: 46,
+    height: 46,
+    borderRadius: RADIUS.md,
+    backgroundColor: COLORS.softPurple,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: SPACING.sm,
+  },
+
+  codeDetails: {
+    flex: 1,
+  },
+
   codeLabel: {
     color: COLORS.muted,
-    fontSize: 12,
-    fontWeight: "700",
+    fontSize: 10,
+    fontWeight: "900",
+    letterSpacing: 0.8,
   },
 
   code: {
     color: COLORS.secondary,
-    fontSize: 24,
+    fontSize: 23,
     fontWeight: "900",
-    letterSpacing: 1,
-    marginTop: SPACING.xs,
+    letterSpacing: 1.3,
+    marginTop: 2,
+  },
+
+  linkBox: {
+    backgroundColor: COLORS.background,
+    borderRadius: RADIUS.sm,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: 11,
+    marginTop: SPACING.md,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: SPACING.xs,
   },
 
   link: {
+    flex: 1,
     color: COLORS.muted,
-    fontSize: 13,
-    marginTop: SPACING.sm,
+    fontSize: 12,
   },
 
   shareButton: {
@@ -675,10 +930,21 @@ const styles = StyleSheet.create({
 
   errorBox: {
     backgroundColor: COLORS.surface,
-    borderRadius: RADIUS.md,
+    borderRadius: RADIUS.lg,
     borderWidth: 1,
-    borderColor: COLORS.danger,
-    padding: SPACING.md,
+    borderColor: "#FECACA",
+    padding: SPACING.lg,
+    alignItems: "center",
+  },
+
+  errorIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "#FEF2F2",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: SPACING.sm,
   },
 
   errorText: {

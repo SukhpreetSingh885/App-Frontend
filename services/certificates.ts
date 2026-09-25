@@ -1,11 +1,9 @@
 import {
+  Directory,
   File,
   Paths,
 } from "expo-file-system";
-
-import {
-  StorageAccessFramework,
-} from "expo-file-system/legacy";
+import { Platform } from "react-native";
 
 import * as Sharing from "expo-sharing";
 
@@ -89,39 +87,58 @@ export async function saveCertificatePdf(
   const downloaded =
     await downloadCertificatePdf(certificate);
 
-  const permission =
-    await StorageAccessFramework.requestDirectoryPermissionsAsync();
+  if (Platform.OS !== "android") {
+    const available =
+      await Sharing.isAvailableAsync();
 
-  if (!permission.granted) {
+    if (!available) {
+      throw new Error(
+        "Saving is not available on this device",
+      );
+    }
+
+    await Sharing.shareAsync(downloaded.uri, {
+      mimeType: "application/pdf",
+      dialogTitle: "Save Certificate",
+      UTI: "com.adobe.pdf",
+    });
+
     return {
-      saved: false,
-      cancelled: true,
+      saved: true,
+      cancelled: false,
+      uri: downloaded.uri,
     };
   }
 
-  const fileUri =
-    await StorageAccessFramework.createFileAsync(
-      permission.directoryUri,
-      downloaded.fileName,
-      "application/pdf",
-    );
+  let directory: Directory;
+
+  try {
+    directory =
+      await Directory.pickDirectoryAsync();
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      /cancel/i.test(error.message)
+    ) {
+      return {
+        saved: false,
+        cancelled: true,
+      };
+    }
+
+    throw error;
+  }
 
   const cachedFile = new File(downloaded.uri);
 
-  const base64 = await cachedFile.base64();
-
-  await StorageAccessFramework.writeAsStringAsync(
-    fileUri,
-    base64,
-    {
-     encoding: "base64",
-    },
-  );
+  await cachedFile.copy(directory, {
+    overwrite: true,
+  });
 
   return {
     saved: true,
     cancelled: false,
-    uri: fileUri,
+    uri: directory.uri,
   };
 }
 

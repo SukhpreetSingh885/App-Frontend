@@ -14,15 +14,14 @@
       "expo-status-bar",
       "expo-video",
       "expo-secure-store",
-
-      [
-        "expo-splash-screen",
-        {
-          "image": "./assets/images/home.png",
-          "resizeMode": "cover",
-          "backgroundColor": "#061A33"
-        }
-      ],
+[
+  "expo-splash-screen",
+  {
+    "image": "./assets/images/home.png",
+    "resizeMode": "contain",
+    "backgroundColor": "#061A33"
+  }
+],
 
       "expo-sharing"
     ],
@@ -33,7 +32,7 @@
 
     "android": {
       "package": "com.viralstan.academy",
-      "versionCode": 4
+      "versionCode": 5
     },
 
     "ios": {

@@ -2,6 +2,7 @@ import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -21,6 +22,7 @@ import {
   CertificateRecord,
   downloadCertificatePdf,
   getCertificateForCourse,
+  saveCertificatePdf,
   shareCertificatePdf,
 } from "@/services/certificates";
 import {
@@ -80,13 +82,11 @@ export default function CertificateScreen() {
             if (active) {
               setPdfUri(file.uri);
             }
-          } catch (error) {
+          } catch {
             if (active) {
               Alert.alert(
                 "Preview unavailable",
-                error instanceof Error
-                  ? error.message
-                  : "Unable to load certificate preview.",
+                "Unable to load certificate preview.",
               );
             }
           } finally {
@@ -127,18 +127,23 @@ export default function CertificateScreen() {
     try {
       setAction("download");
 
-      await downloadCertificatePdf(certificate);
+      const result =
+        await saveCertificatePdf(certificate);
+
+      if (result.cancelled) return;
 
       Alert.alert(
-        "Certificate ready",
-        "Your certificate PDF has been downloaded.",
+        Platform.OS === "android"
+          ? "Certificate saved"
+          : "Certificate ready",
+        Platform.OS === "android"
+          ? "Your certificate PDF is available in the folder you selected."
+          : "Your certificate PDF was sent to your selected destination.",
       );
-    } catch (error) {
+    } catch {
       Alert.alert(
         "Download failed",
-        error instanceof Error
-          ? error.message
-          : "Unable to download certificate.",
+        "Unable to save the certificate. Please try again.",
       );
     } finally {
       setAction(null);
@@ -152,12 +157,10 @@ export default function CertificateScreen() {
       setAction("share");
 
       await shareCertificatePdf(certificate);
-    } catch (error) {
+    } catch {
       Alert.alert(
         "Share failed",
-        error instanceof Error
-          ? error.message
-          : "Unable to share certificate.",
+        "Unable to share the certificate. Please try again.",
       );
     } finally {
       setAction(null);
