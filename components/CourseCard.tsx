@@ -21,6 +21,12 @@ export default function CourseCard({
   const imageSource = course.thumbnail
     ? { uri: course.thumbnail }
     : require("@/assets/images/home.png");
+  const price = course.price ?? 0;
+  const originalPrice = course.originalPrice ?? 0;
+  const hasDiscount = originalPrice > price && originalPrice > 0;
+  const discountPercentage = hasDiscount
+    ? Math.round(((originalPrice - price) / originalPrice) * 100)
+    : 0;
 
   if (variant === "continue") {
     const lessons = course.modules?.flatMap((module) => module.lessons) ?? [];
@@ -118,10 +124,19 @@ export default function CourseCard({
                 </Text>
               ) : <View />}
 
-              <View style={styles.carouselButton}>
-                <Text style={styles.carouselButtonText}>View Course</Text>
-                <Ionicons name="arrow-forward" size={14} color="#FFFFFF" />
-              </View>
+              {hasDiscount ? (
+                <>
+                  <Text style={styles.carouselOldPrice}>
+                    ₹{originalPrice}
+                  </Text>
+
+                  <View style={styles.carouselDiscountBadge}>
+                    <Text style={styles.carouselDiscountText}>
+                      {discountPercentage}% OFF
+                    </Text>
+                  </View>
+                </>
+              ) : null}
             </View>
           </View>
         </Pressable>
@@ -275,8 +290,24 @@ const styles = StyleSheet.create({
     marginTop: 7,
   },
   carouselPrice: {
-    color: COLORS.primary,
-    fontSize: 18,
+    color: COLORS.text,
+    fontSize: 24,
+    fontWeight: "900",
+  },
+  carouselOldPrice: {
+    color: COLORS.muted,
+    fontSize: 15,
+    textDecorationLine: "line-through",
+  },
+  carouselDiscountBadge: {
+    backgroundColor: "#DCFCE7",
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+  },
+  carouselDiscountText: {
+    color: "#16A34A",
+    fontSize: 12,
     fontWeight: "900",
   },
   carouselFooter: {
@@ -284,22 +315,7 @@ const styles = StyleSheet.create({
     paddingTop: 14,
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    gap: 10,
-  },
-  carouselButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: 12,
-    paddingVertical: 9,
-    borderRadius: 999,
-  },
-  carouselButtonText: {
-    color: "#FFFFFF",
-    fontSize: 12,
-    fontWeight: "800",
+    gap: 9,
   },
   card: {
     backgroundColor: COLORS.surface,

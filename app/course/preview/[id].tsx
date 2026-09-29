@@ -1,4 +1,5 @@
 import {
+  ActivityIndicator,
   Alert,
   Pressable,
   ScrollView,
@@ -62,6 +63,12 @@ export default function CoursePreviewScreen() {
   const [course, setCourse] =
     useState<Course | null>(null);
 
+  const [loading, setLoading] =
+    useState(true);
+
+  const [loadFailed, setLoadFailed] =
+    useState(false);
+
   const [enrolled, setEnrolled] =
     useState(false);
 
@@ -76,27 +83,53 @@ export default function CoursePreviewScreen() {
   ] = useState(false);
 
   useEffect(() => {
+    let active = true;
+
     const loadCourse = async () => {
+      setLoading(true);
+      setLoadFailed(false);
+
       try {
         if (!id) {
-          return;
+          throw new Error(
+            "Missing course ID",
+          );
         }
 
         const data =
           await getCourseById(id);
 
-        setCourse(data);
+        if (!data) {
+          throw new Error(
+            "Course not found",
+          );
+        }
+
+        if (active) {
+          setCourse(data);
+        }
       } catch (error) {
         console.log(
           "Preview course error:",
           error,
         );
 
-        setCourse(null);
+        if (active) {
+          setCourse(null);
+          setLoadFailed(true);
+        }
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
       }
     };
 
     void loadCourse();
+
+    return () => {
+      active = false;
+    };
   }, [id]);
 
   const previewLesson =
@@ -272,7 +305,24 @@ export default function CoursePreviewScreen() {
     }, [course]),
   );
 
-  if (!course) {
+  if (loading) {
+    return (
+      <SafeAreaView
+        style={styles.safe}
+      >
+        <View
+          style={styles.notFound}
+        >
+          <ActivityIndicator
+            size="large"
+            color={COLORS.primary}
+          />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (loadFailed || !course) {
     return (
       <SafeAreaView
         style={styles.safe}

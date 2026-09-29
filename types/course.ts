@@ -2,6 +2,7 @@ export type Lesson = {
   id: string;
   _id?: string;
   title: string;
+  category?: "Development" | "Design" | "Marketing" | "Business" | "AI";
   description?: string;
   duration: string;
   videoSource?: "upload" | "url";

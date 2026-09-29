@@ -31,18 +31,37 @@ export default function EnrollScreen() {
   const [course, setCourse] =
     useState<Course | null>(null);
 
+  const [courseLoading, setCourseLoading] =
+    useState(true);
+
+  const [loadFailed, setLoadFailed] =
+    useState(false);
+
   const [loading, setLoading] =
     useState(false);
 
 
   useEffect(() => {
+    let active = true;
+
     const loadCourse = async () => {
+      setCourseLoading(true);
+      setLoadFailed(false);
+
       try {
-        if (!id) return;
+        if (!id) {
+          throw new Error("Missing course ID");
+        }
 
         const data = await getCourseById(id);
 
-        setCourse(data);
+        if (!data) {
+          throw new Error("Course not found");
+        }
+
+        if (active) {
+          setCourse(data);
+        }
 
       } catch (error) {
         console.log(
@@ -50,16 +69,40 @@ export default function EnrollScreen() {
           error,
         );
 
-        setCourse(null);
+        if (active) {
+          setCourse(null);
+          setLoadFailed(true);
+        }
+      } finally {
+        if (active) {
+          setCourseLoading(false);
+        }
       }
     };
 
-    loadCourse();
+    void loadCourse();
 
+    return () => {
+      active = false;
+    };
   }, [id]);
 
 
-  if (!course) {
+  if (courseLoading) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <View style={styles.center}>
+          <ActivityIndicator
+            size="large"
+            color={COLORS.primary}
+          />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+
+  if (loadFailed || !course) {
     return (
       <SafeAreaView style={styles.safe}>
         <View style={styles.center}>
