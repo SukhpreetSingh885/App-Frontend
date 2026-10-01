@@ -7,38 +7,41 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
-
-    "plugins": [
-      "expo-router",
-      "expo-font",
-      "expo-status-bar",
-      "expo-video",
-      "expo-secure-store",
-[
-  "expo-splash-screen",
-  {
-    "image": "./assets/images/home.png",
-    "resizeMode": "contain",
-    "backgroundColor": "#061A33"
-  }
+  "plugins": [
+  "expo-router",
+  "expo-font",
+  "expo-status-bar",
+  "expo-video",
+  "expo-secure-store",
+  [
+    "expo-splash-screen",
+    {
+      "image": "./assets/images/home.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#061A33"
+    }
+  ],
+  "expo-sharing",
+  [
+    "@stripe/stripe-react-native",
+    {
+      "merchantIdentifier": "merchant.com.viralstan.academy"
+    }
+  ]
 ],
-
-      "expo-sharing"
-    ],
-
     "experiments": {
       "typedRoutes": true
     },
-
     "android": {
       "package": "com.viralstan.academy",
       "versionCode": 6
     },
-
     "ios": {
-      "bundleIdentifier": "com.viralstan.academy"
+      "bundleIdentifier": "com.viralstan.academy",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
-
     "extra": {
       "router": {},
       "eas": {

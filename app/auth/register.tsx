@@ -170,7 +170,10 @@ export default function RegisterScreen() {
     setSendingEmailOtp(true);
 
     try {
-      await sendEmailOtp(normalizedEmail);
+      await sendEmailOtp(
+        normalizedEmail,
+        name.trim(),
+      );
 
       setEmail(normalizedEmail);
       setEmailOtp("");

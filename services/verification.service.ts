@@ -1,11 +1,14 @@
 import { apiRequest } from "./api";
 
-export function sendEmailOtp(email: string) {
+export function sendEmailOtp(
+  email: string,
+  name?: string,
+) {
   return apiRequest<{ message: string }>(
     "/verification/email/send",
     {
       method: "POST",
-      body: JSON.stringify({ email }),
+      body: JSON.stringify({ email, name }),
     },
   );
 }
