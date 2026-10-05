@@ -7,7 +7,7 @@ type ApiCourse = Partial<Course> & {
 
 type CoursesResponse = {
   data: ApiCourse[];
-  pagination: {
+  pagination?: {
     page: number;
     limit: number;
     total: number;
